@@ -1,0 +1,49 @@
+﻿version: '3.3'
+
+volumes:
+  task_data:
+     external: true
+services:
+  db:
+    container_name: mysql_database
+    restart: always
+    image: mysql:latest
+    ports:
+       - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 'secret'
+      MYSQL_USER: 'test'
+      MYSQL_PASS: 'secret'
+    networks:
+      - network1
+    volumes:
+      - task_data:/var/lib/mysql
+  api:
+     container_name: api_service
+     image: phpmyadmin/phpmyadmin
+     restart: unless-stopped
+     depends_on:
+        - db
+     ports:
+       - "8080:80"
+     networks:
+        - network1
+        - network2
+     restart: always
+     environment:
+       PMA_HOST: db  
+  command_service:
+      image: alpine
+      container_name: alpine
+      tty: true
+      stdin_open: true
+      restart: always
+      networks:
+        - network2
+networks:
+   network1:
+      driver: bridge
+      external: true
+   network2:
+       driver: bridge
+       external: true
